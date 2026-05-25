@@ -32,5 +32,5 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Dry-run stress test
+      - name: Dry-run stress test + unit tests
         run: npm test

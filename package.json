@@ -12,7 +12,7 @@
     "start": "node dist/index.js",
     "dev": "tsc --watch",
     "lint": "tsc --noEmit",
-    "test": "node scripts/stress-test.js"
+    "test": "node scripts/stress-test.js && node --test tests/*.test.js"
   },
   "keywords": [
     "mcp",
