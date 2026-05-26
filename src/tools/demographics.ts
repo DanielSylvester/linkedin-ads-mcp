@@ -1,6 +1,5 @@
 import type { LinkedInApiClient } from "../linkedin-client.js";
-import { LinkedInApiError } from "../errors.js";
-import type { ToolRegistry, McpTool, ToolHandler } from "../tool-registry.js";
+import type { ToolRegistry } from "../tool-registry.js";
 import { calculateStandardMetrics, DEMOGRAPHIC_TYPE_MAP } from "../lib/metrics.js";
 
 export class DemographicsTools {
@@ -57,7 +56,15 @@ export class DemographicsTools {
       async (args: unknown) => {
         const params = args as Record<string, any>;
         if (!params.accountId || !params.demographicType || !params.startDate) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: "accountId, demographicType, and startDate are required" }) }], isError: true };
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({ error: "accountId, demographicType, and startDate are required" }),
+              },
+            ],
+            isError: true,
+          };
         }
 
         try {
@@ -81,7 +88,14 @@ export class DemographicsTools {
               externalWebsiteConversions: acc.externalWebsiteConversions + (r.externalWebsiteConversions || 0),
               approximateUniqueImpressions: acc.approximateUniqueImpressions + (r.approximateUniqueImpressions || 0),
             }),
-            { impressions: 0, clicks: 0, costInUsd: 0, totalEngagements: 0, externalWebsiteConversions: 0, approximateUniqueImpressions: 0 }
+            {
+              impressions: 0,
+              clicks: 0,
+              costInUsd: 0,
+              totalEngagements: 0,
+              externalWebsiteConversions: 0,
+              approximateUniqueImpressions: 0,
+            }
           );
 
           let segments = analytics.map((record: any) => {
@@ -102,17 +116,26 @@ export class DemographicsTools {
           segments = segments.slice(0, limit);
 
           return {
-            content: [{
-              type: "text",
-              text: JSON.stringify({
-                demographicType: params.demographicType,
-                demographicTypeName: DEMOGRAPHIC_TYPE_MAP[params.demographicType] || params.demographicType,
-                dateRange: { start: params.startDate, end: params.endDate || new Date().toISOString().split("T")[0] },
-                segments,
-                totals: calculateStandardMetrics(totalRecord),
-                note: "Demographic data may have a 12-24 hour delay and shows only top 100 values per creative per day.",
-              }, null, 2),
-            }],
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(
+                  {
+                    demographicType: params.demographicType,
+                    demographicTypeName: DEMOGRAPHIC_TYPE_MAP[params.demographicType] || params.demographicType,
+                    dateRange: {
+                      start: params.startDate,
+                      end: params.endDate || new Date().toISOString().split("T")[0],
+                    },
+                    segments,
+                    totals: calculateStandardMetrics(totalRecord),
+                    note: "Demographic data may have a 12-24 hour delay and shows only top 100 values per creative per day.",
+                  },
+                  null,
+                  2
+                ),
+              },
+            ],
           };
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
@@ -142,7 +165,10 @@ export class DemographicsTools {
       async (args: unknown) => {
         const params = args as Record<string, any>;
         if (!params.accountId || !params.startDate) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: "accountId and startDate are required" }) }], isError: true };
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: "accountId and startDate are required" }) }],
+            isError: true,
+          };
         }
 
         const startDate = new Date(params.startDate);
@@ -150,7 +176,14 @@ export class DemographicsTools {
         const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
         if (daysDiff > 92) {
           return {
-            content: [{ type: "text", text: JSON.stringify({ error: `Date range exceeds maximum of 92 days. Current range: ${daysDiff} days.` }) }],
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  error: `Date range exceeds maximum of 92 days. Current range: ${daysDiff} days.`,
+                }),
+              },
+            ],
             isError: true,
           };
         }
@@ -167,31 +200,61 @@ export class DemographicsTools {
           const results = analytics.map((record: any) => {
             const entityUrn = record.pivotValues?.[0] || "";
             const entityId = entityUrn.split(":").pop() || "";
-            const entityType = entityUrn.includes("Campaign") ? "CAMPAIGN" : entityUrn.includes("CampaignGroup") ? "CAMPAIGN_GROUP" : "ACCOUNT";
+            const entityType = entityUrn.includes("Campaign")
+              ? "CAMPAIGN"
+              : entityUrn.includes("CampaignGroup")
+                ? "CAMPAIGN_GROUP"
+                : "ACCOUNT";
             const reach = record.approximateMemberReach || 0;
             const impressions = record.impressions || 0;
-            const audiencePenetration = record.audiencePenetration != null
-              ? Number((Number(record.audiencePenetration) * 100).toFixed(2))
-              : null;
+            const audiencePenetration =
+              record.audiencePenetration != null ? Number((Number(record.audiencePenetration) * 100).toFixed(2)) : null;
 
-            return { entityType, entityId, metrics: { approximateMemberReach: reach, impressions, frequency: reach > 0 ? (impressions / reach).toFixed(2) : null, audiencePenetration } };
+            return {
+              entityType,
+              entityId,
+              metrics: {
+                approximateMemberReach: reach,
+                impressions,
+                frequency: reach > 0 ? (impressions / reach).toFixed(2) : null,
+                audiencePenetration,
+              },
+            };
           });
 
           const accountTotals = results.reduce(
-            (acc: any, r: any) => ({ totalReach: acc.totalReach + r.metrics.approximateMemberReach, totalImpressions: acc.totalImpressions + r.metrics.impressions }),
+            (acc: any, r: any) => ({
+              totalReach: acc.totalReach + r.metrics.approximateMemberReach,
+              totalImpressions: acc.totalImpressions + r.metrics.impressions,
+            }),
             { totalReach: 0, totalImpressions: 0 }
           );
 
           return {
-            content: [{
-              type: "text",
-              text: JSON.stringify({
-                dateRange: { start: params.startDate, end: params.endDate || new Date().toISOString().split("T")[0] },
-                entities: results,
-                accountTotals: { ...accountTotals, averageFrequency: accountTotals.totalReach > 0 ? (accountTotals.totalImpressions / accountTotals.totalReach).toFixed(2) : null },
-                note: "Reach data requires a date range of 92 days or less.",
-              }, null, 2),
-            }],
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(
+                  {
+                    dateRange: {
+                      start: params.startDate,
+                      end: params.endDate || new Date().toISOString().split("T")[0],
+                    },
+                    entities: results,
+                    accountTotals: {
+                      ...accountTotals,
+                      averageFrequency:
+                        accountTotals.totalReach > 0
+                          ? (accountTotals.totalImpressions / accountTotals.totalReach).toFixed(2)
+                          : null,
+                    },
+                    note: "Reach data requires a date range of 92 days or less.",
+                  },
+                  null,
+                  2
+                ),
+              },
+            ],
           };
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
@@ -210,8 +273,16 @@ export class DemographicsTools {
           type: "object",
           properties: {
             accountId: { type: "string", description: "The LinkedIn Ad Account ID" },
-            status: { type: "array", items: { type: "string", enum: ["ACTIVE", "EXPIRED", "PROCESSING"] }, description: "Filter by status" },
-            audienceType: { type: "string", enum: ["MATCHED", "LOOKALIKE", "PREDICTIVE"], description: "Filter by audience type" },
+            status: {
+              type: "array",
+              items: { type: "string", enum: ["ACTIVE", "EXPIRED", "PROCESSING"] },
+              description: "Filter by status",
+            },
+            audienceType: {
+              type: "string",
+              enum: ["MATCHED", "LOOKALIKE", "PREDICTIVE"],
+              description: "Filter by audience type",
+            },
           },
           required: ["accountId"],
         },
@@ -219,7 +290,10 @@ export class DemographicsTools {
       async (args: unknown) => {
         const params = args as Record<string, any>;
         if (!params.accountId) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: "accountId is required" }) }], isError: true };
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: "accountId is required" }) }],
+            isError: true,
+          };
         }
 
         try {
@@ -229,22 +303,28 @@ export class DemographicsTools {
           });
 
           return {
-            content: [{
-              type: "text",
-              text: JSON.stringify({
-                audiences: audiences.map((a) => ({
-                  id: a.id,
-                  name: a.name,
-                  type: a.type,
-                  status: a.status,
-                  memberCount: a.memberCount,
-                  matchRate: a.matchRate,
-                  createdAt: new Date(a.createdAt).toISOString(),
-                  lastModified: new Date(a.lastModified).toISOString(),
-                })),
-                totalCount: audiences.length,
-              }, null, 2),
-            }],
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(
+                  {
+                    audiences: audiences.map((a) => ({
+                      id: a.id,
+                      name: a.name,
+                      type: a.type,
+                      status: a.status,
+                      memberCount: a.memberCount,
+                      matchRate: a.matchRate,
+                      createdAt: new Date(a.createdAt).toISOString(),
+                      lastModified: new Date(a.lastModified).toISOString(),
+                    })),
+                    totalCount: audiences.length,
+                  },
+                  null,
+                  2
+                ),
+              },
+            ],
           };
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);

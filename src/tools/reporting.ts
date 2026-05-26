@@ -44,8 +44,14 @@ export class ReportingTools {
             dateRange: {
               type: "object",
               properties: {
-                start: { type: "object", properties: { year: { type: "integer" }, month: { type: "integer" }, day: { type: "integer" } } },
-                end: { type: "object", properties: { year: { type: "integer" }, month: { type: "integer" }, day: { type: "integer" } } },
+                start: {
+                  type: "object",
+                  properties: { year: { type: "integer" }, month: { type: "integer" }, day: { type: "integer" } },
+                },
+                end: {
+                  type: "object",
+                  properties: { year: { type: "integer" }, month: { type: "integer" }, day: { type: "integer" } },
+                },
               },
             },
             campaigns: { type: "array", items: { type: "string" } },
@@ -60,7 +66,10 @@ export class ReportingTools {
       async (args: unknown) => {
         const params = args as Record<string, unknown>;
         if (!params.accountId || !params.pivot) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: "accountId and pivot are required" }) }], isError: true };
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: "accountId and pivot are required" }) }],
+            isError: true,
+          };
         }
 
         const pivot = params.pivot as string;
@@ -97,7 +106,9 @@ export class ReportingTools {
         queryParts.push(`start=${start}&count=${count}`);
 
         try {
-          const result = await this.apiClient.get<AnalyticsResponse>(`/adAnalytics?q=analytics&${queryParts.join("&")}`);
+          const result = await this.apiClient.get<AnalyticsResponse>(
+            `/adAnalytics?q=analytics&${queryParts.join("&")}`
+          );
           return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
@@ -109,7 +120,8 @@ export class ReportingTools {
     registry.register(
       {
         name: "linkedin_ads_get_campaign_stats",
-        description: "Get simplified campaign statistics for a list of campaign IDs. Defaults to last 30 days if no date range given.",
+        description:
+          "Get simplified campaign statistics for a list of campaign IDs. Defaults to last 30 days if no date range given.",
         inputSchema: {
           type: "object",
           properties: {
@@ -118,8 +130,14 @@ export class ReportingTools {
             dateRange: {
               type: "object",
               properties: {
-                start: { type: "object", properties: { year: { type: "integer" }, month: { type: "integer" }, day: { type: "integer" } } },
-                end: { type: "object", properties: { year: { type: "integer" }, month: { type: "integer" }, day: { type: "integer" } } },
+                start: {
+                  type: "object",
+                  properties: { year: { type: "integer" }, month: { type: "integer" }, day: { type: "integer" } },
+                },
+                end: {
+                  type: "object",
+                  properties: { year: { type: "integer" }, month: { type: "integer" }, day: { type: "integer" } },
+                },
               },
             },
           },
@@ -129,7 +147,10 @@ export class ReportingTools {
       async (args: unknown) => {
         const params = args as Record<string, unknown>;
         if (!params.accountId || !Array.isArray(params.campaignIds) || params.campaignIds.length === 0) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: "accountId and campaignIds are required" }) }], isError: true };
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: "accountId and campaignIds are required" }) }],
+            isError: true,
+          };
         }
 
         const campaignIds = params.campaignIds as string[];
@@ -169,7 +190,9 @@ export class ReportingTools {
         queryParts.push(`start=0&count=1000`);
 
         try {
-          const result = await this.apiClient.get<AnalyticsResponse>(`/adAnalytics?q=analytics&${queryParts.join("&")}`);
+          const result = await this.apiClient.get<AnalyticsResponse>(
+            `/adAnalytics?q=analytics&${queryParts.join("&")}`
+          );
           return { content: [{ type: "text", text: JSON.stringify(result.elements, null, 2) }] };
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);

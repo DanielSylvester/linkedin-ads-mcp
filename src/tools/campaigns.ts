@@ -14,13 +14,18 @@ export class CampaignTools {
     registry.register(
       {
         name: "linkedin_ads_list_campaigns",
-        description: "Lists ALL campaigns for a LinkedIn Ad Account including DRAFT and PAUSED with zero impressions. Supports filtering by campaign group and status. Use this when you need to see inactive or draft campaigns.",
+        description:
+          "Lists ALL campaigns for a LinkedIn Ad Account including DRAFT and PAUSED with zero impressions. Supports filtering by campaign group and status. Use this when you need to see inactive or draft campaigns.",
         inputSchema: {
           type: "object",
           properties: {
             accountId: { type: "string", description: "The LinkedIn Ad Account ID" },
             campaignGroupIds: { type: "array", items: { type: "string" }, description: "Filter by campaign group IDs" },
-            status: { type: "array", items: { type: "string", enum: ["ACTIVE", "PAUSED", "ARCHIVED", "DRAFT", "CANCELED"] }, description: "Filter by status" },
+            status: {
+              type: "array",
+              items: { type: "string", enum: ["ACTIVE", "PAUSED", "ARCHIVED", "DRAFT", "CANCELED"] },
+              description: "Filter by status",
+            },
           },
           required: ["accountId"],
         },
@@ -28,7 +33,10 @@ export class CampaignTools {
       async (args: unknown) => {
         const params = args as Record<string, any>;
         if (!params.accountId) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: "accountId is required" }) }], isError: true };
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: "accountId is required" }) }],
+            isError: true,
+          };
         }
         try {
           const campaigns = await this.apiClient.listCampaigns(params.accountId, {
@@ -36,24 +44,30 @@ export class CampaignTools {
             status: params.status,
           });
           return {
-            content: [{
-              type: "text",
-              text: JSON.stringify({
-                campaigns: campaigns.map((c) => ({
-                  id: c.id,
-                  name: c.name,
-                  status: c.status,
-                  type: c.type,
-                  objectiveType: c.objectiveType,
-                  costType: c.costType,
-                  campaignGroup: c.campaignGroup,
-                  dailyBudget: c.dailyBudget,
-                  totalBudget: c.totalBudget,
-                  runSchedule: c.runSchedule,
-                })),
-                totalCount: campaigns.length,
-              }, null, 2),
-            }],
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(
+                  {
+                    campaigns: campaigns.map((c) => ({
+                      id: c.id,
+                      name: c.name,
+                      status: c.status,
+                      type: c.type,
+                      objectiveType: c.objectiveType,
+                      costType: c.costType,
+                      campaignGroup: c.campaignGroup,
+                      dailyBudget: c.dailyBudget,
+                      totalBudget: c.totalBudget,
+                      runSchedule: c.runSchedule,
+                    })),
+                    totalCount: campaigns.length,
+                  },
+                  null,
+                  2
+                ),
+              },
+            ],
           };
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
@@ -79,7 +93,10 @@ export class CampaignTools {
       async (args: unknown) => {
         const params = args as { accountId?: string; campaignId?: string };
         if (!params.accountId || !params.campaignId) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: "accountId and campaignId are required" }) }], isError: true };
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: "accountId and campaignId are required" }) }],
+            isError: true,
+          };
         }
         try {
           const result = await this.apiClient.getCampaign(params.accountId, params.campaignId);
@@ -122,7 +139,10 @@ export class CampaignTools {
         const required = ["accountId", "campaignGroupId", "name", "status", "objectiveType", "costType", "format"];
         for (const field of required) {
           if (!params[field]) {
-            return { content: [{ type: "text", text: JSON.stringify({ error: `${field} is required` }) }], isError: true };
+            return {
+              content: [{ type: "text", text: JSON.stringify({ error: `${field} is required` }) }],
+              isError: true,
+            };
           }
         }
 
@@ -144,7 +164,19 @@ export class CampaignTools {
 
         try {
           const result = await this.apiClient.createCampaign(params.accountId, body);
-          return { content: [{ type: "text", text: JSON.stringify({ success: true, campaignId: result.id, name: params.name, status: params.status }) }] };
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  success: true,
+                  campaignId: result.id,
+                  name: params.name,
+                  status: params.status,
+                }),
+              },
+            ],
+          };
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
           return { content: [{ type: "text", text: JSON.stringify({ error: message }) }], isError: true };
@@ -177,7 +209,10 @@ export class CampaignTools {
       async (args: unknown) => {
         const params = args as Record<string, any>;
         if (!params.accountId || !params.campaignId) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: "accountId and campaignId are required" }) }], isError: true };
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: "accountId and campaignId are required" }) }],
+            isError: true,
+          };
         }
 
         const updates: Record<string, unknown> = {};
@@ -191,12 +226,28 @@ export class CampaignTools {
         if (params.offsiteDeliveryEnabled !== undefined) updates.offsiteDeliveryEnabled = params.offsiteDeliveryEnabled;
 
         if (Object.keys(updates).length === 0) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: "At least one field to update must be provided" }) }], isError: true };
+          return {
+            content: [
+              { type: "text", text: JSON.stringify({ error: "At least one field to update must be provided" }) },
+            ],
+            isError: true,
+          };
         }
 
         try {
           await this.apiClient.updateCampaign(params.accountId, params.campaignId, updates);
-          return { content: [{ type: "text", text: JSON.stringify({ success: true, campaignId: params.campaignId, updatedFields: Object.keys(updates) }) }] };
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  success: true,
+                  campaignId: params.campaignId,
+                  updatedFields: Object.keys(updates),
+                }),
+              },
+            ],
+          };
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
           return { content: [{ type: "text", text: JSON.stringify({ error: message }) }], isError: true };
@@ -208,7 +259,8 @@ export class CampaignTools {
     registry.register(
       {
         name: "linkedin_ads_delete_campaign",
-        description: "Delete (archive) a campaign. Draft campaigns are deleted immediately. Non-draft campaigns are set to PENDING_DELETION.",
+        description:
+          "Delete (archive) a campaign. Draft campaigns are deleted immediately. Non-draft campaigns are set to PENDING_DELETION.",
         inputSchema: {
           type: "object",
           properties: {
@@ -221,7 +273,10 @@ export class CampaignTools {
       async (args: unknown) => {
         const params = args as { accountId?: string; campaignId?: string };
         if (!params.accountId || !params.campaignId) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: "accountId and campaignId are required" }) }], isError: true };
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: "accountId and campaignId are required" }) }],
+            isError: true,
+          };
         }
 
         try {
@@ -229,17 +284,19 @@ export class CampaignTools {
           const isDraft = campaign?.status === "DRAFT";
           await this.apiClient.deleteCampaign(params.accountId, params.campaignId, isDraft);
           return {
-            content: [{
-              type: "text",
-              text: JSON.stringify({
-                success: true,
-                campaignId: params.campaignId,
-                action: isDraft ? "DELETED" : "PENDING_DELETION",
-                message: isDraft
-                  ? `Draft campaign ${params.campaignId} deleted`
-                  : `Campaign ${params.campaignId} set to PENDING_DELETION`,
-              }),
-            }],
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  success: true,
+                  campaignId: params.campaignId,
+                  action: isDraft ? "DELETED" : "PENDING_DELETION",
+                  message: isDraft
+                    ? `Draft campaign ${params.campaignId} deleted`
+                    : `Campaign ${params.campaignId} set to PENDING_DELETION`,
+                }),
+              },
+            ],
           };
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
@@ -252,7 +309,8 @@ export class CampaignTools {
     registry.register(
       {
         name: "linkedin_ads_get_campaign_performance",
-        description: "Retrieves performance metrics for campaigns with standard KPIs (CTR, CPC, CPM, conversion rate, cost per conversion, audience penetration, average dwell time). Resolves campaign names automatically.",
+        description:
+          "Retrieves performance metrics for campaigns with standard KPIs (CTR, CPC, CPM, conversion rate, cost per conversion, audience penetration, average dwell time). Resolves campaign names automatically.",
         inputSchema: {
           type: "object",
           properties: {
@@ -261,7 +319,11 @@ export class CampaignTools {
             campaignGroupIds: { type: "array", items: { type: "string" }, description: "Filter by campaign group IDs" },
             startDate: { type: "string", description: "Start date in YYYY-MM-DD format" },
             endDate: { type: "string", description: "End date in YYYY-MM-DD format. Default: today" },
-            timeGranularity: { type: "string", enum: ["ALL", "DAILY", "MONTHLY"], description: "Time granularity. Default: ALL" },
+            timeGranularity: {
+              type: "string",
+              enum: ["ALL", "DAILY", "MONTHLY"],
+              description: "Time granularity. Default: ALL",
+            },
           },
           required: ["accountId", "startDate"],
         },
@@ -269,7 +331,10 @@ export class CampaignTools {
       async (args: unknown) => {
         const params = args as Record<string, any>;
         if (!params.accountId || !params.startDate) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: "accountId and startDate are required" }) }], isError: true };
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: "accountId and startDate are required" }) }],
+            isError: true,
+          };
         }
 
         try {
@@ -311,18 +376,34 @@ export class CampaignTools {
               externalWebsiteConversions: acc.externalWebsiteConversions + r.metrics.conversions,
               approximateUniqueImpressions: acc.approximateUniqueImpressions + r.metrics.reach,
             }),
-            { impressions: 0, clicks: 0, costInUsd: 0, totalEngagements: 0, externalWebsiteConversions: 0, approximateUniqueImpressions: 0 }
+            {
+              impressions: 0,
+              clicks: 0,
+              costInUsd: 0,
+              totalEngagements: 0,
+              externalWebsiteConversions: 0,
+              approximateUniqueImpressions: 0,
+            }
           );
 
           return {
-            content: [{
-              type: "text",
-              text: JSON.stringify({
-                campaigns: results,
-                totals: calculateStandardMetrics(totalRecord),
-                dateRange: { start: params.startDate, end: params.endDate || new Date().toISOString().split("T")[0] },
-              }, null, 2),
-            }],
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(
+                  {
+                    campaigns: results,
+                    totals: calculateStandardMetrics(totalRecord),
+                    dateRange: {
+                      start: params.startDate,
+                      end: params.endDate || new Date().toISOString().split("T")[0],
+                    },
+                  },
+                  null,
+                  2
+                ),
+              },
+            ],
           };
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);

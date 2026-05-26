@@ -11,7 +11,9 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "tsc --watch",
-    "lint": "tsc --noEmit",
+    "lint": "tsc --noEmit && eslint src/**/*.ts",
+    "format": "prettier --write src/**/*.ts tests/**/*.js scripts/**/*.js",
+    "format:check": "prettier --check src/**/*.ts tests/**/*.js scripts/**/*.js",
     "pretest": "npm run build",
     "test": "node scripts/stress-test.js && node --test tests/*.test.js"
   },
@@ -29,8 +31,13 @@
     "dotenv": "^16.4.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^22.0.0",
-    "typescript": "^5.7.0"
+    "eslint": "^10.4.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.8.3",
+    "typescript": "^5.7.0",
+    "typescript-eslint": "^8.60.0"
   },
   "engines": {
     "node": ">=20.0.0"

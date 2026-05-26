@@ -29,7 +29,10 @@ export class CreativeTools {
       async (args: unknown) => {
         const params = args as Record<string, any>;
         if (!params.accountId) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: "accountId is required" }) }], isError: true };
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: "accountId is required" }) }],
+            isError: true,
+          };
         }
 
         const campaignIds = params.campaignId ? [params.campaignId] : undefined;
@@ -63,7 +66,10 @@ export class CreativeTools {
       async (args: unknown) => {
         const params = args as Record<string, any>;
         if (!params.accountId || !params.creativeId) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: "accountId and creativeId are required" }) }], isError: true };
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: "accountId and creativeId are required" }) }],
+            isError: true,
+          };
         }
         try {
           const result = await this.apiClient.getCreative(params.accountId, params.creativeId);
@@ -89,7 +95,21 @@ export class CreativeTools {
             intendedStatus: { type: "string", enum: ["ACTIVE", "DRAFT"], default: "DRAFT" },
             name: { type: "string" },
             leadgenFormId: { type: "string" },
-            leadgenCallToActionLabel: { type: "string", enum: ["APPLY", "DOWNLOAD", "VIEW_QUOTE", "LEARN_MORE", "SIGN_UP", "SUBSCRIBE", "REGISTER", "REQUEST_DEMO", "JOIN", "ATTEND"] },
+            leadgenCallToActionLabel: {
+              type: "string",
+              enum: [
+                "APPLY",
+                "DOWNLOAD",
+                "VIEW_QUOTE",
+                "LEARN_MORE",
+                "SIGN_UP",
+                "SUBSCRIBE",
+                "REGISTER",
+                "REQUEST_DEMO",
+                "JOIN",
+                "ATTEND",
+              ],
+            },
           },
           required: ["accountId", "campaignId", "contentReference"],
         },
@@ -97,7 +117,15 @@ export class CreativeTools {
       async (args: unknown) => {
         const params = args as Record<string, any>;
         if (!params.accountId || !params.campaignId || !params.contentReference) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: "accountId, campaignId, and contentReference are required" }) }], isError: true };
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({ error: "accountId, campaignId, and contentReference are required" }),
+              },
+            ],
+            isError: true,
+          };
         }
 
         const data: Record<string, unknown> = {
@@ -108,14 +136,23 @@ export class CreativeTools {
         if (params.name) data.name = params.name;
         if (params.leadgenFormId) {
           data.leadgenCallToAction = {
-            destination: params.leadgenFormId.startsWith("urn:") ? params.leadgenFormId : `urn:li:adForm:${params.leadgenFormId}`,
+            destination: params.leadgenFormId.startsWith("urn:")
+              ? params.leadgenFormId
+              : `urn:li:adForm:${params.leadgenFormId}`,
             label: params.leadgenCallToActionLabel || "LEARN_MORE",
           };
         }
 
         try {
           const result = await this.apiClient.createCreative(params.accountId, data);
-          return { content: [{ type: "text", text: JSON.stringify({ success: true, creativeId: result.id, campaignId: params.campaignId }) }] };
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({ success: true, creativeId: result.id, campaignId: params.campaignId }),
+              },
+            ],
+          };
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
           return { content: [{ type: "text", text: JSON.stringify({ error: message }) }], isError: true };
@@ -127,22 +164,54 @@ export class CreativeTools {
     registry.register(
       {
         name: "linkedin_ads_create_inline_ad",
-        description: "Creates a new LinkedIn ad with inline content directly (without needing a pre-existing post). Creates the ad content (text, image/video, landing page, CTA) and the creative in a single call.",
+        description:
+          "Creates a new LinkedIn ad with inline content directly (without needing a pre-existing post). Creates the ad content (text, image/video, landing page, CTA) and the creative in a single call.",
         inputSchema: {
           type: "object",
           properties: {
             accountId: { type: "string" },
             campaignId: { type: "string" },
-            organizationId: { type: "string", description: "Organization/company ID (numeric or urn:li:organization:123)" },
+            organizationId: {
+              type: "string",
+              description: "Organization/company ID (numeric or urn:li:organization:123)",
+            },
             commentary: { type: "string", description: "The ad text/copy" },
             mediaId: { type: "string", description: "URN of image/video (upload first via upload_image)" },
             mediaTitle: { type: "string" },
             landingPageUrl: { type: "string" },
-            callToActionLabel: { type: "string", enum: ["APPLY", "DOWNLOAD", "VIEW_QUOTE", "LEARN_MORE", "SIGN_UP", "SUBSCRIBE", "REGISTER", "REQUEST_DEMO", "JOIN", "ATTEND"] },
+            callToActionLabel: {
+              type: "string",
+              enum: [
+                "APPLY",
+                "DOWNLOAD",
+                "VIEW_QUOTE",
+                "LEARN_MORE",
+                "SIGN_UP",
+                "SUBSCRIBE",
+                "REGISTER",
+                "REQUEST_DEMO",
+                "JOIN",
+                "ATTEND",
+              ],
+            },
             intendedStatus: { type: "string", enum: ["ACTIVE", "DRAFT"], default: "DRAFT" },
             name: { type: "string" },
             leadgenFormId: { type: "string" },
-            leadgenCallToActionLabel: { type: "string", enum: ["APPLY", "DOWNLOAD", "VIEW_QUOTE", "LEARN_MORE", "SIGN_UP", "SUBSCRIBE", "REGISTER", "REQUEST_DEMO", "JOIN", "ATTEND"] },
+            leadgenCallToActionLabel: {
+              type: "string",
+              enum: [
+                "APPLY",
+                "DOWNLOAD",
+                "VIEW_QUOTE",
+                "LEARN_MORE",
+                "SIGN_UP",
+                "SUBSCRIBE",
+                "REGISTER",
+                "REQUEST_DEMO",
+                "JOIN",
+                "ATTEND",
+              ],
+            },
           },
           required: ["accountId", "campaignId", "organizationId", "commentary"],
         },
@@ -150,7 +219,15 @@ export class CreativeTools {
       async (args: unknown) => {
         const params = args as Record<string, any>;
         if (!params.accountId || !params.campaignId || !params.organizationId || !params.commentary) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: "accountId, campaignId, organizationId, and commentary are required" }) }], isError: true };
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({ error: "accountId, campaignId, organizationId, and commentary are required" }),
+              },
+            ],
+            isError: true,
+          };
         }
 
         const data: Record<string, unknown> = {
@@ -166,14 +243,23 @@ export class CreativeTools {
         if (params.name) data.name = params.name;
         if (params.leadgenFormId) {
           data.leadgenCallToAction = {
-            destination: params.leadgenFormId.startsWith("urn:") ? params.leadgenFormId : `urn:li:adForm:${params.leadgenFormId}`,
+            destination: params.leadgenFormId.startsWith("urn:")
+              ? params.leadgenFormId
+              : `urn:li:adForm:${params.leadgenFormId}`,
             label: params.leadgenCallToActionLabel || "LEARN_MORE",
           };
         }
 
         try {
           const result = await this.apiClient.createInlineCreative(params.accountId, data);
-          return { content: [{ type: "text", text: JSON.stringify({ success: true, creativeId: result.id, campaignId: params.campaignId }) }] };
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({ success: true, creativeId: result.id, campaignId: params.campaignId }),
+              },
+            ],
+          };
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
           return { content: [{ type: "text", text: JSON.stringify({ error: message }) }], isError: true };
@@ -199,11 +285,32 @@ export class CreativeTools {
       async (args: unknown) => {
         const params = args as Record<string, any>;
         if (!params.accountId || !params.creativeId || !params.intendedStatus) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: "accountId, creativeId, and intendedStatus are required" }) }], isError: true };
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({ error: "accountId, creativeId, and intendedStatus are required" }),
+              },
+            ],
+            isError: true,
+          };
         }
         try {
-          await this.apiClient.updateCreative(params.accountId, params.creativeId, { intendedStatus: params.intendedStatus });
-          return { content: [{ type: "text", text: JSON.stringify({ success: true, creativeId: params.creativeId, intendedStatus: params.intendedStatus }) }] };
+          await this.apiClient.updateCreative(params.accountId, params.creativeId, {
+            intendedStatus: params.intendedStatus,
+          });
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  success: true,
+                  creativeId: params.creativeId,
+                  intendedStatus: params.intendedStatus,
+                }),
+              },
+            ],
+          };
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
           return { content: [{ type: "text", text: JSON.stringify({ error: message }) }], isError: true };
@@ -215,7 +322,8 @@ export class CreativeTools {
     registry.register(
       {
         name: "linkedin_ads_get_creative_performance",
-        description: "Retrieves performance metrics for creatives with standard KPIs, engagement breakdown (likes, comments, shares), and video metrics. Resolves creative names automatically.",
+        description:
+          "Retrieves performance metrics for creatives with standard KPIs, engagement breakdown (likes, comments, shares), and video metrics. Resolves creative names automatically.",
         inputSchema: {
           type: "object",
           properties: {
@@ -233,7 +341,10 @@ export class CreativeTools {
       async (args: unknown) => {
         const params = args as Record<string, any>;
         if (!params.accountId || !params.startDate) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: "accountId and startDate are required" }) }], isError: true };
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: "accountId and startDate are required" }) }],
+            isError: true,
+          };
         }
 
         try {
@@ -253,7 +364,8 @@ export class CreativeTools {
             const creativeUrn = record.pivotValues?.[0] || "";
             const creativeId = creativeUrn.split(":").pop() || "";
             const creative = creativeMap.get(creativeId);
-            const creativeName = creative?.name || creative?.content?.textAd?.text?.substring(0, 50) || `Creative ${creativeId}`;
+            const creativeName =
+              creative?.name || creative?.content?.textAd?.text?.substring(0, 50) || `Creative ${creativeId}`;
 
             return {
               creativeId,
@@ -269,7 +381,10 @@ export class CreativeTools {
                 follows: record.follows || 0,
                 videoViews: record.videoViews || 0,
                 videoCompletions: record.videoCompletions || 0,
-                videoCompletionRate: record.videoViews > 0 ? Number(((record.videoCompletions || 0) / record.videoViews * 100).toFixed(2)) : null,
+                videoCompletionRate:
+                  record.videoViews > 0
+                    ? Number((((record.videoCompletions || 0) / record.videoViews) * 100).toFixed(2))
+                    : null,
               },
             };
           });
@@ -288,7 +403,19 @@ export class CreativeTools {
               videoViews: acc.videoViews + r.metrics.videoViews,
               videoCompletions: acc.videoCompletions + r.metrics.videoCompletions,
             }),
-            { impressions: 0, clicks: 0, costInUsd: 0, totalEngagements: 0, externalWebsiteConversions: 0, approximateUniqueImpressions: 0, likes: 0, comments: 0, shares: 0, videoViews: 0, videoCompletions: 0 }
+            {
+              impressions: 0,
+              clicks: 0,
+              costInUsd: 0,
+              totalEngagements: 0,
+              externalWebsiteConversions: 0,
+              approximateUniqueImpressions: 0,
+              likes: 0,
+              comments: 0,
+              shares: 0,
+              videoViews: 0,
+              videoCompletions: 0,
+            }
           );
 
           const totals = {
@@ -298,14 +425,30 @@ export class CreativeTools {
             shares: totalRecord.shares,
             videoViews: totalRecord.videoViews,
             videoCompletions: totalRecord.videoCompletions,
-            videoCompletionRate: totalRecord.videoViews > 0 ? Number((totalRecord.videoCompletions / totalRecord.videoViews * 100).toFixed(2)) : null,
+            videoCompletionRate:
+              totalRecord.videoViews > 0
+                ? Number(((totalRecord.videoCompletions / totalRecord.videoViews) * 100).toFixed(2))
+                : null,
           };
 
           return {
-            content: [{
-              type: "text",
-              text: JSON.stringify({ creatives: results, totals, dateRange: { start: params.startDate, end: params.endDate || new Date().toISOString().split("T")[0] } }, null, 2),
-            }],
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(
+                  {
+                    creatives: results,
+                    totals,
+                    dateRange: {
+                      start: params.startDate,
+                      end: params.endDate || new Date().toISOString().split("T")[0],
+                    },
+                  },
+                  null,
+                  2
+                ),
+              },
+            ],
           };
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
@@ -318,14 +461,21 @@ export class CreativeTools {
     registry.register(
       {
         name: "linkedin_ads_upload_image",
-        description: "Uploads an image file to LinkedIn for use in ads. Supports PNG, JPG, and GIF. Returns the image URN to use as mediaId when creating inline ads.",
+        description:
+          "Uploads an image file to LinkedIn for use in ads. Supports PNG, JPG, and GIF. Returns the image URN to use as mediaId when creating inline ads.",
         inputSchema: {
           type: "object",
           properties: {
-            organizationId: { type: "string", description: "Owner of the image. Can be organization URN or numeric ID" },
+            organizationId: {
+              type: "string",
+              description: "Owner of the image. Can be organization URN or numeric ID",
+            },
             filePath: { type: "string", description: "Absolute path to the image file" },
             accountId: { type: "string", description: "Optional: Ad Account ID to register in media library" },
-            assetName: { type: "string", description: "Optional: Name for asset in media library (required if accountId provided)" },
+            assetName: {
+              type: "string",
+              description: "Optional: Name for asset in media library (required if accountId provided)",
+            },
           },
           required: ["organizationId", "filePath"],
         },
@@ -333,7 +483,10 @@ export class CreativeTools {
       async (args: unknown) => {
         const params = args as Record<string, any>;
         if (!params.organizationId || !params.filePath) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: "organizationId and filePath are required" }) }], isError: true };
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: "organizationId and filePath are required" }) }],
+            isError: true,
+          };
         }
         try {
           const result = await this.apiClient.uploadImage({
@@ -342,7 +495,18 @@ export class CreativeTools {
             accountId: params.accountId,
             assetName: params.assetName,
           });
-          return { content: [{ type: "text", text: JSON.stringify({ success: true, imageUrn: result.imageUrn, message: `Use "${result.imageUrn}" as mediaId when creating ads.` }) }] };
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  success: true,
+                  imageUrn: result.imageUrn,
+                  message: `Use "${result.imageUrn}" as mediaId when creating ads.`,
+                }),
+              },
+            ],
+          };
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
           return { content: [{ type: "text", text: JSON.stringify({ error: message }) }], isError: true };

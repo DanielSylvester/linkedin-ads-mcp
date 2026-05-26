@@ -17,7 +17,10 @@ export class AccountTools {
       inputSchema: {
         type: "object",
         properties: {
-          status: { type: "array", items: { type: "string", enum: ["ACTIVE", "DRAFT", "CANCELED", "PENDING_DELETION"] } },
+          status: {
+            type: "array",
+            items: { type: "string", enum: ["ACTIVE", "DRAFT", "CANCELED", "PENDING_DELETION"] },
+          },
           type: { type: "string", enum: ["BUSINESS", "ENTERPRISE"] },
           includeTest: { type: "boolean", default: false },
           start: { type: "integer", default: 0 },
@@ -35,24 +38,33 @@ export class AccountTools {
           includeTest: includeTest as boolean | undefined,
         });
         return {
-          content: [{
-            type: "text",
-            text: JSON.stringify({
-              accounts: accounts.map((a) => ({
-                id: a.id,
-                name: a.name,
-                currency: a.currency,
-                type: a.type,
-                status: a.status,
-                isTest: a.test,
-              })),
-              totalCount: accounts.length,
-            }, null, 2),
-          }],
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  accounts: accounts.map((a) => ({
+                    id: a.id,
+                    name: a.name,
+                    currency: a.currency,
+                    type: a.type,
+                    status: a.status,
+                    isTest: a.test,
+                  })),
+                  totalCount: accounts.length,
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       } catch (err) {
         if (err instanceof LinkedInApiError) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: err.message, statusCode: err.statusCode }) }], isError: true };
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: err.message, statusCode: err.statusCode }) }],
+            isError: true,
+          };
         }
         return { content: [{ type: "text", text: JSON.stringify({ error: String(err) }) }], isError: true };
       }
@@ -81,29 +93,38 @@ export class AccountTools {
       try {
         const account = await this.apiClient.getAccountDetails(accountId);
         return {
-          content: [{
-            type: "text",
-            text: JSON.stringify({
-              id: account.id,
-              name: account.name,
-              currency: account.currency,
-              type: account.type,
-              status: account.status,
-              servingStatuses: account.servingStatuses,
-              reference: account.reference,
-              notificationSettings: {
-                campaignOptimization: account.notifiedOnCampaignOptimizationTips,
-                creativeApproval: account.notifiedOnCreativeApproval,
-                creativeRejection: account.notifiedOnCreativeRejection,
-                endOfCampaign: account.notifiedOnEndOfCampaign,
-              },
-              isTest: account.test,
-            }, null, 2),
-          }],
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  id: account.id,
+                  name: account.name,
+                  currency: account.currency,
+                  type: account.type,
+                  status: account.status,
+                  servingStatuses: account.servingStatuses,
+                  reference: account.reference,
+                  notificationSettings: {
+                    campaignOptimization: account.notifiedOnCampaignOptimizationTips,
+                    creativeApproval: account.notifiedOnCreativeApproval,
+                    creativeRejection: account.notifiedOnCreativeRejection,
+                    endOfCampaign: account.notifiedOnEndOfCampaign,
+                  },
+                  isTest: account.test,
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       } catch (err) {
         if (err instanceof LinkedInApiError) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: err.message, statusCode: err.statusCode }) }], isError: true };
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: err.message, statusCode: err.statusCode }) }],
+            isError: true,
+          };
         }
         return { content: [{ type: "text", text: JSON.stringify({ error: String(err) }) }], isError: true };
       }

@@ -31,7 +31,10 @@ export class ConversionsTools {
       async (args: unknown) => {
         const params = args as Record<string, any>;
         if (!params.accountId || !params.startDate) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: "accountId and startDate are required" }) }], isError: true };
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: "accountId and startDate are required" }) }],
+            isError: true,
+          };
         }
 
         try {
@@ -81,14 +84,27 @@ export class ConversionsTools {
           );
 
           return {
-            content: [{
-              type: "text",
-              text: JSON.stringify({
-                dateRange: { start: params.startDate, end: params.endDate || new Date().toISOString().split("T")[0] },
-                conversions: results,
-                totals: { ...totals, overallCostPerConversion: totals.totalConversions > 0 ? totals.totalCost / totals.totalConversions : null },
-              }, null, 2),
-            }],
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(
+                  {
+                    dateRange: {
+                      start: params.startDate,
+                      end: params.endDate || new Date().toISOString().split("T")[0],
+                    },
+                    conversions: results,
+                    totals: {
+                      ...totals,
+                      overallCostPerConversion:
+                        totals.totalConversions > 0 ? totals.totalCost / totals.totalConversions : null,
+                    },
+                  },
+                  null,
+                  2
+                ),
+              },
+            ],
           };
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
@@ -101,7 +117,8 @@ export class ConversionsTools {
     registry.register(
       {
         name: "linkedin_ads_list_conversions",
-        description: "Lists all conversion tracking rules configured for an account. Shows conversion names, types, attribution windows, and enabled status.",
+        description:
+          "Lists all conversion tracking rules configured for an account. Shows conversion names, types, attribution windows, and enabled status.",
         inputSchema: {
           type: "object",
           properties: {
@@ -114,28 +131,37 @@ export class ConversionsTools {
       async (args: unknown) => {
         const params = args as Record<string, any>;
         if (!params.accountId) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: "accountId is required" }) }], isError: true };
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: "accountId is required" }) }],
+            isError: true,
+          };
         }
 
         try {
           const conversions = await this.apiClient.listConversions(params.accountId, params.enabledOnly);
           return {
-            content: [{
-              type: "text",
-              text: JSON.stringify({
-                conversions: conversions.map((c) => ({
-                  id: c.id,
-                  name: c.name,
-                  type: c.type,
-                  conversionMethod: c.conversionMethod || "INSIGHT_TAG",
-                  enabled: c.enabled,
-                  postClickAttributionWindow: c.postClickAttributionWindowSize,
-                  viewThroughAttributionWindow: c.viewThroughAttributionWindowSize,
-                  attributionType: c.attributionType,
-                })),
-                totalCount: conversions.length,
-              }, null, 2),
-            }],
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(
+                  {
+                    conversions: conversions.map((c) => ({
+                      id: c.id,
+                      name: c.name,
+                      type: c.type,
+                      conversionMethod: c.conversionMethod || "INSIGHT_TAG",
+                      enabled: c.enabled,
+                      postClickAttributionWindow: c.postClickAttributionWindowSize,
+                      viewThroughAttributionWindow: c.viewThroughAttributionWindowSize,
+                      attributionType: c.attributionType,
+                    })),
+                    totalCount: conversions.length,
+                  },
+                  null,
+                  2
+                ),
+              },
+            ],
           };
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
@@ -148,7 +174,8 @@ export class ConversionsTools {
     registry.register(
       {
         name: "linkedin_ads_get_lead_gen_performance",
-        description: "Retrieves lead generation form performance including form submissions, qualified leads, and cost per lead. Essential for B2B marketers running lead gen campaigns.",
+        description:
+          "Retrieves lead generation form performance including form submissions, qualified leads, and cost per lead. Essential for B2B marketers running lead gen campaigns.",
         inputSchema: {
           type: "object",
           properties: {
@@ -164,7 +191,10 @@ export class ConversionsTools {
       async (args: unknown) => {
         const params = args as Record<string, any>;
         if (!params.accountId || !params.startDate) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: "accountId and startDate are required" }) }], isError: true };
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: "accountId and startDate are required" }) }],
+            isError: true,
+          };
         }
 
         try {
@@ -176,9 +206,7 @@ export class ConversionsTools {
             timeGranularity: params.timeGranularity,
           });
 
-          const campaignIds = analytics
-            .map((record: any) => record.pivotValues?.[0]?.split(":").pop())
-            .filter(Boolean);
+          const campaignIds = analytics.map((record: any) => record.pivotValues?.[0]?.split(":").pop()).filter(Boolean);
           const campaignMap = await this.apiClient.getCampaignsByIds(params.accountId, campaignIds);
 
           const results = analytics.map((record: any) => {
@@ -216,19 +244,34 @@ export class ConversionsTools {
           );
 
           return {
-            content: [{
-              type: "text",
-              text: JSON.stringify({
-                dateRange: { start: params.startDate, end: params.endDate || new Date().toISOString().split("T")[0] },
-                leadMetrics: {
-                  ...totals,
-                  overallCostPerLead: totals.totalLeads > 0 ? totals.totalCost / totals.totalLeads : null,
-                  overallFormOpenToSubmitRate: totals.totalFormOpens > 0 ? ((totals.totalLeads / totals.totalFormOpens) * 100).toFixed(2) : null,
-                  overallLeadQualificationRate: totals.totalLeads > 0 ? ((totals.totalQualifiedLeads / totals.totalLeads) * 100).toFixed(2) : null,
-                },
-                byCampaign: results,
-              }, null, 2),
-            }],
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(
+                  {
+                    dateRange: {
+                      start: params.startDate,
+                      end: params.endDate || new Date().toISOString().split("T")[0],
+                    },
+                    leadMetrics: {
+                      ...totals,
+                      overallCostPerLead: totals.totalLeads > 0 ? totals.totalCost / totals.totalLeads : null,
+                      overallFormOpenToSubmitRate:
+                        totals.totalFormOpens > 0
+                          ? ((totals.totalLeads / totals.totalFormOpens) * 100).toFixed(2)
+                          : null,
+                      overallLeadQualificationRate:
+                        totals.totalLeads > 0
+                          ? ((totals.totalQualifiedLeads / totals.totalLeads) * 100).toFixed(2)
+                          : null,
+                    },
+                    byCampaign: results,
+                  },
+                  null,
+                  2
+                ),
+              },
+            ],
           };
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
@@ -241,12 +284,17 @@ export class ConversionsTools {
     registry.register(
       {
         name: "linkedin_ads_list_lead_forms",
-        description: "Lists all lead generation forms configured for an account with their questions and settings. Helps understand what forms are available and their configuration.",
+        description:
+          "Lists all lead generation forms configured for an account with their questions and settings. Helps understand what forms are available and their configuration.",
         inputSchema: {
           type: "object",
           properties: {
             accountId: { type: "string", description: "The LinkedIn Ad Account ID" },
-            status: { type: "array", items: { type: "string", enum: ["DRAFT", "PUBLISHED", "ARCHIVED"] }, description: "Filter by status" },
+            status: {
+              type: "array",
+              items: { type: "string", enum: ["DRAFT", "PUBLISHED", "ARCHIVED"] },
+              description: "Filter by status",
+            },
             includeQuestions: { type: "boolean", description: "Include form questions. Default: true" },
           },
           required: ["accountId"],
@@ -255,39 +303,48 @@ export class ConversionsTools {
       async (args: unknown) => {
         const params = args as Record<string, any>;
         if (!params.accountId) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: "accountId is required" }) }], isError: true };
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: "accountId is required" }) }],
+            isError: true,
+          };
         }
 
         try {
           const forms = await this.apiClient.listLeadForms(params.accountId, params.status);
           return {
-            content: [{
-              type: "text",
-              text: JSON.stringify({
-                forms: forms.map((form) => {
-                  const result: Record<string, unknown> = {
-                    id: form.id,
-                    name: form.name,
-                    status: form.status,
-                    headline: form.headline,
-                    description: form.description,
-                    thankYouMessage: form.thankYouMessage,
-                    landingPageUrl: form.landingPageUrl,
-                  };
-                  if (params.includeQuestions !== false && form.questions) {
-                    result.questions = form.questions.map((q) => ({
-                      questionId: q.questionId,
-                      questionType: q.questionType,
-                      questionText: q.questionText,
-                      required: q.required,
-                      predefinedField: q.predefinedField,
-                    }));
-                  }
-                  return result;
-                }),
-                totalCount: forms.length,
-              }, null, 2),
-            }],
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(
+                  {
+                    forms: forms.map((form) => {
+                      const result: Record<string, unknown> = {
+                        id: form.id,
+                        name: form.name,
+                        status: form.status,
+                        headline: form.headline,
+                        description: form.description,
+                        thankYouMessage: form.thankYouMessage,
+                        landingPageUrl: form.landingPageUrl,
+                      };
+                      if (params.includeQuestions !== false && form.questions) {
+                        result.questions = form.questions.map((q) => ({
+                          questionId: q.questionId,
+                          questionType: q.questionType,
+                          questionText: q.questionText,
+                          required: q.required,
+                          predefinedField: q.predefinedField,
+                        }));
+                      }
+                      return result;
+                    }),
+                    totalCount: forms.length,
+                  },
+                  null,
+                  2
+                ),
+              },
+            ],
           };
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);

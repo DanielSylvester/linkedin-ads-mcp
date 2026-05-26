@@ -138,12 +138,15 @@ describe("LinkedInApiClient — request core", () => {
       makeResponse({ status: 500, statusText: "Error", body: { msg: "fail" } }),
     ]);
 
-    await assert.rejects(async () => client.get("/test"), (err) => {
-      assert.ok(err instanceof LinkedInApiError);
-      assert.strictEqual(err.statusCode, 500);
-      assert.ok(err.message.includes("LinkedIn API error"));
-      return true;
-    });
+    await assert.rejects(
+      async () => client.get("/test"),
+      (err) => {
+        assert.ok(err instanceof LinkedInApiError);
+        assert.strictEqual(err.statusCode, 500);
+        assert.ok(err.message.includes("LinkedIn API error"));
+        return true;
+      }
+    );
     assert.strictEqual(fetchCalls.length, 3);
   });
 
@@ -151,11 +154,14 @@ describe("LinkedInApiClient — request core", () => {
     const client = new LinkedInApiClient(TEST_CONFIG);
     mockFetch(makeResponse({ status: 401, statusText: "Unauthorized", body: {} }));
 
-    await assert.rejects(async () => client.get("/test"), (err) => {
-      assert.ok(err instanceof LinkedInApiError);
-      assert.strictEqual(err.statusCode, 401);
-      return true;
-    });
+    await assert.rejects(
+      async () => client.get("/test"),
+      (err) => {
+        assert.ok(err instanceof LinkedInApiError);
+        assert.strictEqual(err.statusCode, 401);
+        return true;
+      }
+    );
     assert.strictEqual(fetchCalls.length, 1);
   });
 
@@ -163,11 +169,14 @@ describe("LinkedInApiClient — request core", () => {
     const client = new LinkedInApiClient(TEST_CONFIG);
     mockFetch(makeResponse({ status: 403, statusText: "Forbidden", body: {} }));
 
-    await assert.rejects(async () => client.get("/test"), (err) => {
-      assert.ok(err instanceof LinkedInApiError);
-      assert.strictEqual(err.statusCode, 403);
-      return true;
-    });
+    await assert.rejects(
+      async () => client.get("/test"),
+      (err) => {
+        assert.ok(err instanceof LinkedInApiError);
+        assert.strictEqual(err.statusCode, 403);
+        return true;
+      }
+    );
     assert.strictEqual(fetchCalls.length, 1);
   });
 
@@ -189,10 +198,7 @@ describe("LinkedInApiClient — request core", () => {
 
   it("falls back to exponential backoff on 429 without Retry-After", async () => {
     const client = new LinkedInApiClient(TEST_CONFIG);
-    mockFetch([
-      makeResponse({ status: 429, statusText: "Too Many Requests" }),
-      makeResponse({ body: { ok: true } }),
-    ]);
+    mockFetch([makeResponse({ status: 429, statusText: "Too Many Requests" }), makeResponse({ body: { ok: true } })]);
 
     const start = Date.now();
     await client.get("/test");
@@ -232,11 +238,14 @@ describe("LinkedInApiClient — request core", () => {
       }),
     ]);
 
-    await assert.rejects(async () => client.get("/test"), (err) => {
-      assert.ok(err instanceof LinkedInApiError);
-      assert.strictEqual(err.requestId, "req-abc-123");
-      return true;
-    });
+    await assert.rejects(
+      async () => client.get("/test"),
+      (err) => {
+        assert.ok(err instanceof LinkedInApiError);
+        assert.strictEqual(err.requestId, "req-abc-123");
+        return true;
+      }
+    );
   });
 });
 
@@ -257,21 +266,30 @@ describe("LinkedInApiClient — date helpers", () => {
 });
 
 describe("LinkedInApiClient — account filtering", () => {
-  before(() => { originalFetch = global.fetch; });
-  after(() => { global.fetch = originalFetch; });
-  beforeEach(() => { fetchCalls = []; fetchResponseQueue = []; });
+  before(() => {
+    originalFetch = global.fetch;
+  });
+  after(() => {
+    global.fetch = originalFetch;
+  });
+  beforeEach(() => {
+    fetchCalls = [];
+    fetchResponseQueue = [];
+  });
 
   it("filters out test accounts by default", async () => {
     const client = new LinkedInApiClient(TEST_CONFIG);
-    mockFetch(makeResponse({
-      body: {
-        elements: [
-          { id: "1", test: false },
-          { id: "2", test: true },
-          { id: "3", test: false },
-        ],
-      },
-    }));
+    mockFetch(
+      makeResponse({
+        body: {
+          elements: [
+            { id: "1", test: false },
+            { id: "2", test: true },
+            { id: "3", test: false },
+          ],
+        },
+      })
+    );
 
     const accounts = await client.listAdAccounts();
     assert.strictEqual(accounts.length, 2);
@@ -280,14 +298,16 @@ describe("LinkedInApiClient — account filtering", () => {
 
   it("includes test accounts when requested", async () => {
     const client = new LinkedInApiClient(TEST_CONFIG);
-    mockFetch(makeResponse({
-      body: {
-        elements: [
-          { id: "1", test: false },
-          { id: "2", test: true },
-        ],
-      },
-    }));
+    mockFetch(
+      makeResponse({
+        body: {
+          elements: [
+            { id: "1", test: false },
+            { id: "2", test: true },
+          ],
+        },
+      })
+    );
 
     const accounts = await client.listAdAccounts({ includeTest: true });
     assert.strictEqual(accounts.length, 2);
@@ -295,9 +315,16 @@ describe("LinkedInApiClient — account filtering", () => {
 });
 
 describe("LinkedInApiClient — batching", () => {
-  before(() => { originalFetch = global.fetch; });
-  after(() => { global.fetch = originalFetch; });
-  beforeEach(() => { fetchCalls = []; fetchResponseQueue = []; });
+  before(() => {
+    originalFetch = global.fetch;
+  });
+  after(() => {
+    global.fetch = originalFetch;
+  });
+  beforeEach(() => {
+    fetchCalls = [];
+    fetchResponseQueue = [];
+  });
 
   it("getCampaignsByIds fetches in batches of 10", async () => {
     const client = new LinkedInApiClient(TEST_CONFIG);
@@ -316,14 +343,16 @@ describe("LinkedInApiClient — batching", () => {
 
   it("getCreativesByIds batches and extracts IDs via regex", async () => {
     const client = new LinkedInApiClient(TEST_CONFIG);
-    mockFetch(makeResponse({
-      body: {
-        elements: [
-          { id: "urn:li:sponsoredCreative:101", name: "Creative A" },
-          { id: "urn:li:sponsoredCreative:102", name: "Creative B" },
-        ],
-      },
-    }));
+    mockFetch(
+      makeResponse({
+        body: {
+          elements: [
+            { id: "urn:li:sponsoredCreative:101", name: "Creative A" },
+            { id: "urn:li:sponsoredCreative:102", name: "Creative B" },
+          ],
+        },
+      })
+    );
 
     const map = await client.getCreativesByIds("123", ["101", "102"]);
     assert.strictEqual(map.size, 2);
@@ -347,9 +376,16 @@ describe("LinkedInApiClient — batching", () => {
 });
 
 describe("LinkedInApiClient — draft-aware deletes", () => {
-  before(() => { originalFetch = global.fetch; });
-  after(() => { global.fetch = originalFetch; });
-  beforeEach(() => { fetchCalls = []; fetchResponseQueue = []; });
+  before(() => {
+    originalFetch = global.fetch;
+  });
+  after(() => {
+    global.fetch = originalFetch;
+  });
+  beforeEach(() => {
+    fetchCalls = [];
+    fetchResponseQueue = [];
+  });
 
   it("deletes draft campaign immediately", async () => {
     const client = new LinkedInApiClient(TEST_CONFIG);

@@ -186,8 +186,16 @@ async function runTests() {
   info("Validating tool schemas...");
   let schemaErrors = 0;
   for (const tool of tools) {
-    if (!tool.name) { schemaErrors++; fail(`Tool schema: missing name`); continue; }
-    if (!tool.description) { schemaErrors++; fail(`Tool ${tool.name}: missing description`); continue; }
+    if (!tool.name) {
+      schemaErrors++;
+      fail(`Tool schema: missing name`);
+      continue;
+    }
+    if (!tool.description) {
+      schemaErrors++;
+      fail(`Tool ${tool.name}: missing description`);
+      continue;
+    }
     if (!tool.inputSchema || tool.inputSchema.type !== "object") {
       schemaErrors++;
       fail(`Tool ${tool.name}: invalid inputSchema`);
@@ -334,11 +342,15 @@ async function runTests() {
   info("Running rapid-fire request burst (10 parallel calls)...");
   reqId++;
   const burst = Array.from({ length: 10 }, (_, i) =>
-    sendRequest(server, {
-      jsonrpc: "2.0",
-      id: reqId + i,
-      method: "tools/list",
-    }, 15000)
+    sendRequest(
+      server,
+      {
+        jsonrpc: "2.0",
+        id: reqId + i,
+        method: "tools/list",
+      },
+      15000
+    )
   );
 
   try {

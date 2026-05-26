@@ -1,7 +1,7 @@
 import type { LinkedInApiClient } from "../linkedin-client.js";
 import { LinkedInApiError } from "../errors.js";
 import type { ToolRegistry, McpTool, ToolHandler } from "../tool-registry.js";
-import type { CampaignGroup, RunSchedule, BudgetAmount } from "../types.js";
+import type { RunSchedule, BudgetAmount } from "../types.js";
 import { calculateStandardMetrics } from "../lib/metrics.js";
 
 export class CampaignGroupTools {
@@ -32,8 +32,7 @@ export class CampaignGroupTools {
     };
 
     const listCampaignGroupsHandler: ToolHandler = async (args: unknown) => {
-      const { accountId, start = 0, count = 50, status, includePerformance, startDate, endDate } =
-        (args as Record<string, unknown>) ?? {};
+      const { accountId, status, includePerformance, startDate, endDate } = (args as Record<string, unknown>) ?? {};
 
       if (typeof accountId !== "string" || accountId.length === 0) {
         return { content: [{ type: "text", text: JSON.stringify({ error: "accountId is required" }) }], isError: true };
@@ -58,23 +57,32 @@ export class CampaignGroupTools {
         }
 
         return {
-          content: [{
-            type: "text",
-            text: JSON.stringify({
-              campaignGroups: groups.map((group) => ({
-                id: group.id,
-                name: group.name,
-                status: group.status,
-                totalBudget: group.totalBudget,
-                runSchedule: group.runSchedule,
-                performance: performanceByGroup[group.id] || null,
-              })),
-            }, null, 2),
-          }],
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  campaignGroups: groups.map((group) => ({
+                    id: group.id,
+                    name: group.name,
+                    status: group.status,
+                    totalBudget: group.totalBudget,
+                    runSchedule: group.runSchedule,
+                    performance: performanceByGroup[group.id] || null,
+                  })),
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       } catch (err) {
         if (err instanceof LinkedInApiError) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: err.message, statusCode: err.statusCode }) }], isError: true };
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: err.message, statusCode: err.statusCode }) }],
+            isError: true,
+          };
         }
         return { content: [{ type: "text", text: JSON.stringify({ error: String(err) }) }], isError: true };
       }
@@ -99,7 +107,10 @@ export class CampaignGroupTools {
     const getCampaignGroupHandler: ToolHandler = async (args: unknown) => {
       const { accountId, campaignGroupId } = args as Record<string, unknown>;
       if (typeof accountId !== "string" || typeof campaignGroupId !== "string") {
-        return { content: [{ type: "text", text: JSON.stringify({ error: "accountId and campaignGroupId are required" }) }], isError: true };
+        return {
+          content: [{ type: "text", text: JSON.stringify({ error: "accountId and campaignGroupId are required" }) }],
+          isError: true,
+        };
       }
 
       try {
@@ -107,7 +118,10 @@ export class CampaignGroupTools {
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err) {
         if (err instanceof LinkedInApiError) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: err.message, statusCode: err.statusCode }) }], isError: true };
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: err.message, statusCode: err.statusCode }) }],
+            isError: true,
+          };
         }
         return { content: [{ type: "text", text: JSON.stringify({ error: String(err) }) }], isError: true };
       }
@@ -135,7 +149,10 @@ export class CampaignGroupTools {
     const createCampaignGroupHandler: ToolHandler = async (args: unknown) => {
       const { accountId, name, status = "DRAFT", runSchedule, totalBudget } = args as Record<string, unknown>;
       if (typeof accountId !== "string" || typeof name !== "string") {
-        return { content: [{ type: "text", text: JSON.stringify({ error: "accountId and name are required" }) }], isError: true };
+        return {
+          content: [{ type: "text", text: JSON.stringify({ error: "accountId and name are required" }) }],
+          isError: true,
+        };
       }
 
       const body: Record<string, unknown> = { name, status };
@@ -144,10 +161,17 @@ export class CampaignGroupTools {
 
       try {
         const result = await this.apiClient.createCampaignGroup(accountId, body);
-        return { content: [{ type: "text", text: JSON.stringify({ success: true, campaignGroupId: result.id, name, status }) }] };
+        return {
+          content: [
+            { type: "text", text: JSON.stringify({ success: true, campaignGroupId: result.id, name, status }) },
+          ],
+        };
       } catch (err) {
         if (err instanceof LinkedInApiError) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: err.message, statusCode: err.statusCode }) }], isError: true };
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: err.message, statusCode: err.statusCode }) }],
+            isError: true,
+          };
         }
         return { content: [{ type: "text", text: JSON.stringify({ error: String(err) }) }], isError: true };
       }
@@ -176,7 +200,10 @@ export class CampaignGroupTools {
     const updateCampaignGroupHandler: ToolHandler = async (args: unknown) => {
       const { accountId, campaignGroupId, name, status, runSchedule, totalBudget } = args as Record<string, unknown>;
       if (typeof accountId !== "string" || typeof campaignGroupId !== "string") {
-        return { content: [{ type: "text", text: JSON.stringify({ error: "accountId and campaignGroupId are required" }) }], isError: true };
+        return {
+          content: [{ type: "text", text: JSON.stringify({ error: "accountId and campaignGroupId are required" }) }],
+          isError: true,
+        };
       }
 
       const updates: Record<string, unknown> = {};
@@ -186,15 +213,28 @@ export class CampaignGroupTools {
       if (totalBudget !== undefined) updates.totalBudget = totalBudget;
 
       if (Object.keys(updates).length === 0) {
-        return { content: [{ type: "text", text: JSON.stringify({ error: "At least one field to update must be provided" }) }], isError: true };
+        return {
+          content: [{ type: "text", text: JSON.stringify({ error: "At least one field to update must be provided" }) }],
+          isError: true,
+        };
       }
 
       try {
         await this.apiClient.updateCampaignGroup(accountId, campaignGroupId, updates);
-        return { content: [{ type: "text", text: JSON.stringify({ success: true, campaignGroupId, updatedFields: Object.keys(updates) }) }] };
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({ success: true, campaignGroupId, updatedFields: Object.keys(updates) }),
+            },
+          ],
+        };
       } catch (err) {
         if (err instanceof LinkedInApiError) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: err.message, statusCode: err.statusCode }) }], isError: true };
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: err.message, statusCode: err.statusCode }) }],
+            isError: true,
+          };
         }
         return { content: [{ type: "text", text: JSON.stringify({ error: String(err) }) }], isError: true };
       }
@@ -205,7 +245,8 @@ export class CampaignGroupTools {
     // ── 5. delete_campaign_group ─────────────────────────────────────────
     const deleteCampaignGroupTool: McpTool = {
       name: "linkedin_ads_delete_campaign_group",
-      description: "Delete a campaign group. Draft groups are deleted immediately. Non-draft groups are set to PENDING_DELETION.",
+      description:
+        "Delete a campaign group. Draft groups are deleted immediately. Non-draft groups are set to PENDING_DELETION.",
       inputSchema: {
         type: "object",
         properties: {
@@ -219,7 +260,10 @@ export class CampaignGroupTools {
     const deleteCampaignGroupHandler: ToolHandler = async (args: unknown) => {
       const { accountId, campaignGroupId } = args as Record<string, unknown>;
       if (typeof accountId !== "string" || typeof campaignGroupId !== "string") {
-        return { content: [{ type: "text", text: JSON.stringify({ error: "accountId and campaignGroupId are required" }) }], isError: true };
+        return {
+          content: [{ type: "text", text: JSON.stringify({ error: "accountId and campaignGroupId are required" }) }],
+          isError: true,
+        };
       }
 
       try {
@@ -227,21 +271,26 @@ export class CampaignGroupTools {
         const isDraft = group?.status === "DRAFT";
         await this.apiClient.deleteCampaignGroup(accountId, campaignGroupId, isDraft);
         return {
-          content: [{
-            type: "text",
-            text: JSON.stringify({
-              success: true,
-              campaignGroupId,
-              action: isDraft ? "DELETED" : "PENDING_DELETION",
-              message: isDraft
-                ? `Draft campaign group ${campaignGroupId} deleted`
-                : `Campaign group ${campaignGroupId} set to PENDING_DELETION`,
-            }),
-          }],
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({
+                success: true,
+                campaignGroupId,
+                action: isDraft ? "DELETED" : "PENDING_DELETION",
+                message: isDraft
+                  ? `Draft campaign group ${campaignGroupId} deleted`
+                  : `Campaign group ${campaignGroupId} set to PENDING_DELETION`,
+              }),
+            },
+          ],
         };
       } catch (err) {
         if (err instanceof LinkedInApiError) {
-          return { content: [{ type: "text", text: JSON.stringify({ error: err.message, statusCode: err.statusCode }) }], isError: true };
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: err.message, statusCode: err.statusCode }) }],
+            isError: true,
+          };
         }
         return { content: [{ type: "text", text: JSON.stringify({ error: String(err) }) }], isError: true };
       }
