@@ -15,7 +15,8 @@
     "format": "prettier --write src/**/*.ts tests/**/*.js scripts/**/*.js",
     "format:check": "prettier --check src/**/*.ts tests/**/*.js scripts/**/*.js",
     "pretest": "npm run build",
-    "test": "node scripts/stress-test.js && node --test tests/*.test.js"
+    "test": "node scripts/stress-test.js && node --test tests/*.test.js",
+    "test:live": "node scripts/smoke-test-live.js"
   },
   "keywords": [
     "mcp",
